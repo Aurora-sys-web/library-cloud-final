@@ -134,7 +134,10 @@ export default {
     getTimer() {
       var d = new Date()
       var t = d.toLocaleString()
-      document.getElementById('myTimer').innerHTML = t
+      var timerElement = document.getElementById('myTimer')
+      if (timerElement) {
+        timerElement.innerHTML = t
+      }
     }
   }
 }

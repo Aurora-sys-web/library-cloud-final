@@ -222,7 +222,7 @@ export default {
     },
 
     handleAlow(id){
-      request.put("user/" + id ).then(res =>{
+      request.put("user/alow/" + id ).then(res =>{
         console.log(res)
         if(res.code == 0 ){
           ElMessage.success("授权成功")

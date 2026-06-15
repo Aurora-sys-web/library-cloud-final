@@ -2,6 +2,7 @@ package com.library.user.controller;
 
 import com.library.common.Result;
 import com.library.user.entity.User;
+import com.library.user.mapper.UserMapper;
 import com.library.user.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -18,6 +19,7 @@ import java.util.Map;
 public class UserController {
 
     private final UserService userService;
+    private final UserMapper userMapper;
 
     @PostMapping("/login")
     @Operation(summary = "用户登录")
@@ -35,6 +37,13 @@ public class UserController {
     @Operation(summary = "根据ID查询用户")
     public Result<?> getById(@PathVariable Long id) {
         return userService.getById(id);
+    }
+
+    @PutMapping("/{id}")
+    @Operation(summary = "更新用户")
+    public Result<?> updateUser(@PathVariable Long id, @RequestBody User user) {
+        user.setId(id);
+        return userService.update(user);
     }
 
     @PutMapping("/update")
@@ -95,6 +104,31 @@ public class UserController {
     @PostMapping("/resetPassword")
     @Operation(summary = "重置密码")
     public Result<?> resetPassword(@RequestBody Map<String, String> params) {
+        String username = params.get("username");
+        String password = params.get("password");
+        String code = params.get("code");
+        return userService.resetPassword(username, password, code);
+    }
+
+    @PostMapping("/forget/getcode")
+    @Operation(summary = "获取短信验证码（忘记密码用）")
+    public Result<?> forgetGetCode(@RequestParam String username) {
+        com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper<User> wrapper = new com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper<>();
+        wrapper.eq(User::getUsername, username);
+        User user = userMapper.selectOne(wrapper);
+        if (user == null) {
+            return Result.error("-1", "用户不存在");
+        }
+        String phone = user.getPhone();
+        if (phone == null || phone.isEmpty()) {
+            return Result.error("-1", "该用户未绑定手机号");
+        }
+        return userService.sendSmsCode(phone);
+    }
+
+    @PostMapping("/forget/register")
+    @Operation(summary = "忘记密码重置")
+    public Result<?> forgetReset(@RequestBody Map<String, String> params) {
         String username = params.get("username");
         String password = params.get("password");
         String code = params.get("code");

@@ -83,6 +83,17 @@ public class BookController {
             @RequestParam(defaultValue = "") String search1,
             @RequestParam(defaultValue = "") String search2,
             @RequestParam(defaultValue = "") String search3) {
+        // search3 前端用于传递用户ID（查询该用户借阅的图书），这里返回普通分页
+        return bookService.pageQuery(pageNum, pageSize, search1, search2, search3);
+    }
+
+    @GetMapping("/list")
+    @Operation(summary = "分页查询图书（兼容另一种调用）")
+    public Result<?> pageList(@RequestParam(defaultValue = "1") Integer pageNum,
+            @RequestParam(defaultValue = "10") Integer pageSize,
+            @RequestParam(defaultValue = "") String search1,
+            @RequestParam(defaultValue = "") String search2,
+            @RequestParam(defaultValue = "") String search3) {
         return bookService.pageQuery(pageNum, pageSize, search1, search2, search3);
     }
 }

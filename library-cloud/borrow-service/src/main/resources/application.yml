@@ -1,6 +1,11 @@
 server:
   port: 8083
 
+# 最大借阅数量配置
+book:
+  max:
+    borrow: 10
+
 spring:
   application:
     name: borrow-service
@@ -25,3 +30,13 @@ springdoc:
     path: /v3/api-docs
   swagger-ui:
     path: /swagger-ui.html
+
+# Actuator 配置，启用刷新端点
+management:
+  endpoints:
+    web:
+      exposure:
+        include: refresh,health,info
+  endpoint:
+    refresh:
+      enabled: true
