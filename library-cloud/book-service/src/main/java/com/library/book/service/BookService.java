@@ -10,6 +10,8 @@ import com.library.book.mapper.BookMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 public class BookService {
@@ -50,6 +52,22 @@ public class BookService {
         return Result.success();
     }
 
+    public Result<?> deleteBatch(List<Long> ids) {
+        if (ids == null || ids.isEmpty()) {
+            return Result.error("-1", "请选择要下架的图书");
+        }
+        for (Long id : ids) {
+            Book book = bookMapper.selectById(id);
+            if (book != null && "0".equals(book.getStatus())) {
+                return Result.error("-1", "图书《" + book.getName() + "》正在借阅中，无法下架");
+            }
+        }
+        for (Long id : ids) {
+            bookMapper.deleteById(id);
+        }
+        return Result.success();
+    }
+
     public Result<?> getById(Long id) {
         Book book = bookMapper.selectById(id);
         if (book == null) {
@@ -60,6 +78,9 @@ public class BookService {
 
     public Result<?> getByIsbn(String isbn) {
         Book book = bookMapper.selectOne(Wrappers.<Book>lambdaQuery().eq(Book::getIsbn, isbn));
+        if (book == null) {
+            return Result.error("-1", "图书不存在");
+        }
         return Result.success(book);
     }
 

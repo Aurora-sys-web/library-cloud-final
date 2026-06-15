@@ -210,7 +210,6 @@ export default {
   },
   name: 'Book',
   methods: {
-  // (this.isbnArray.indexOf(scope.row.isbn)) == -1
     handleSelectionChange(val){
       this.ids = val.map(v =>v.id)
     },
@@ -219,7 +218,6 @@ export default {
         ElMessage.warning("请选择数据！")
         return
       }
-      //  一个小优化，直接发送这个数组，而不是一个一个的提交下架
       request.post("/book/deleteBatch",this.ids).then(res =>{
         if(res.code === '0'){
           ElMessage.success("批量下架成功")
@@ -231,8 +229,8 @@ export default {
       })
     },
     load(){
-      this.numOfOutDataBook =0;
-      this.outDateBook =[];
+      this.numOfOutDataBook = 0;
+      this.outDateBook = [];
       request.get("/book",{
         params:{
           pageNum: this.currentPage,
@@ -246,7 +244,7 @@ export default {
         this.tableData = res.data.records
         this.total = res.data.total
       })
-    //
+
       if(this.user.role == 2){
         request.get("/bookwithuser",{
           params:{
@@ -274,10 +272,10 @@ export default {
               this.numOfOutDataBook = this.numOfOutDataBook + 1;
             }
           }
-          console.log("in load():" +this.numOfOutDataBook );
+          console.log("in load():" + this.numOfOutDataBook );
         })
       }
-      request.get("/user/alow/"+this.user.id).then(res=>{
+      request.get("/user/checkAlow/"+this.user.id).then(res=>{
         if (res.code == 0) {
           this.flag = true
         }
@@ -285,7 +283,6 @@ export default {
           this.flag = false
         }
       })
-      //判断是否具有借阅权力
     },
     clear(){
       this.search1 = ""
@@ -295,7 +292,7 @@ export default {
     },
 
     handleDelete(id){
-      request.delete("book/" + id ).then(res =>{
+      request.delete("/book/" + id ).then(res =>{
         console.log(res)
         if(res.code == 0 ){
           ElMessage.success("下架成功")
@@ -319,7 +316,6 @@ export default {
         else {
           ElMessage.error(res.msg)
         }
-      //
         this.form3.isbn = isbn
         this.form3.readerId = this.user.id
         let endDate = moment(new Date()).format("yyyy-MM-DD HH:mm:ss")
@@ -327,7 +323,7 @@ export default {
         this.form3.status = "1"
         console.log(bn)
         this.form3.borrownum = bn
-        request.put("/LendRecord1/",this.form3).then(res =>{
+        request.put("/LendRecord/" + isbn,this.form3).then(res =>{
           console.log(res)
           let form3 ={};
           form3.isbn = isbn;
@@ -341,19 +337,15 @@ export default {
             console.log(res)
             this.load()
           })
-
         })
-      //
       })
     },
     handlelend(id,isbn,name,bn){
-
       if (this.phone == null){
         ElMessage.error("借阅失败! 请先将个人信息补充完整")
-        this.$router.push("/person")//跳转个人信息界面
+        this.$router.push("/person")
         return;
       }
-
       if(this.number ==5){
         ElMessage.warning("您不能再借阅更多的书籍了")
         return;
@@ -362,7 +354,6 @@ export default {
         ElMessage.warning("在您归还逾期书籍前不能再借阅书籍")
         return;
       }
-
       if(this.flag == false){
         ElMessage({
           message: '您没有借阅权限,管理员审核通过后授权',
@@ -370,7 +361,6 @@ export default {
         })
         return;
       }
-
       this.form.status = "0"
       this.form.id = id
       this.form.borrownum = bn+1
@@ -387,21 +377,16 @@ export default {
           ElMessage.error(res.msg)
         }
       })
-
       this.form2.status = "0"
       this.form2.isbn = isbn
       this.form2.bookname = name
       this.form2.readerId = this.user.id
       this.form2.borrownum = bn+1
-      console.log(this.form2.borrownum)
-      console.log(this.user)
       let startDate = moment(new Date()).format("yyyy-MM-DD HH:mm:ss");
       this.form2.lendTime = startDate
-      console.log(this.user)
       request.post("/LendRecord",this.form2).then(res =>{
         console.log(res)
         this.load();
-
       })
       let form3 ={};
       form3.isbn = isbn;
@@ -423,9 +408,6 @@ export default {
       this.form ={}
     },
     save(){
-      //ES6语法
-      //地址,但是？IP与端口？+请求参数
-      // this.form?这是自动保存在form中的，虽然显示时没有使用，但是这个对象中是有它的
       if(this.form.id){
         request.put("/book",this.form).then(res =>{
           console.log(res)
@@ -438,7 +420,6 @@ export default {
           else {
             ElMessage.error(res.msg)
           }
-
           this.load()
           this.dialogVisible2 = false
         })
@@ -458,12 +439,7 @@ export default {
           this.dialogVisible = false
         })
       }
-
     },
-    // formatter(row) {:formatter="formatter"
-    //   return row.address
-    // },
-
     handleEdit(row){
       this.form = JSON.parse(JSON.stringify(row))
       this.dialogVisible2 = true
@@ -477,7 +453,7 @@ export default {
       this.load()
     },
     toLook(){
-      this.dialogVisible3 =true;
+      this.dialogVisible3 = true;
     },
   },
   data() {
@@ -502,7 +478,7 @@ export default {
       isbnArray:[],
       outDateBook:[],
       numOfOutDataBook: 0,
-      dialogVisible3 : true,
+      dialogVisible3 : false,
     }
   },
 }

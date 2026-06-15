@@ -36,7 +36,7 @@ public class BorrowService {
         if (!"0".equals(alowResult.getCode())) {
             return alowResult;
         }
-        
+
         // 2. 检查当前借阅数量
         LambdaQueryWrapper<BookWithUser> countWrapper = Wrappers.lambdaQuery();
         countWrapper.eq(BookWithUser::getId, userId);
@@ -44,7 +44,7 @@ public class BorrowService {
         if (borrowCount >= 5) {
             return Result.error("-1", "您已达到最大借阅数量（5本）");
         }
-        
+
         // 3. 检查图书
         Result<?> bookResult = bookFeignClient.getByIsbn(isbn);
         if (!"0".equals(bookResult.getCode())) {
@@ -55,20 +55,20 @@ public class BorrowService {
         if ("0".equals(status)) {
             return Result.error("-1", "图书已被借出");
         }
-        
+
         // 4. 更新图书状态
         Result<?> updateStatusResult = bookFeignClient.updateStatus(isbn, "0");
         if (!"0".equals(updateStatusResult.getCode())) {
             return Result.error("-1", "借阅失败，请重试");
         }
-        
+
         // 5. 增加借阅次数
         bookFeignClient.incrementBorrowNum(isbn);
-        
+
         // 6. 获取用户信息
         Result<?> userResult = userFeignClient.getUserById(userId);
         Map<String, Object> userData = (Map<String, Object>) userResult.getData();
-        
+
         // 7. 创建借阅记录
         LendRecord lendRecord = new LendRecord();
         lendRecord.setReaderId(userId);
@@ -78,7 +78,7 @@ public class BorrowService {
         lendRecord.setStatus("0");
         lendRecord.setBorrownum((Integer) bookData.get("borrownum") + 1);
         lendRecordMapper.insert(lendRecord);
-        
+
         // 8. 添加到借阅状态表
         BookWithUser bookWithUser = new BookWithUser();
         bookWithUser.setId(userId);
@@ -90,7 +90,7 @@ public class BorrowService {
         bookWithUser.setDeadtime(deadtime);
         bookWithUser.setProlong(1);
         bookWithUserMapper.insert(bookWithUser);
-        
+
         return Result.success();
     }
 
@@ -103,25 +103,25 @@ public class BorrowService {
         if (bookWithUsers.isEmpty()) {
             return Result.error("-1", "没有该书的借阅记录");
         }
-        
+
         bookWithUserMapper.deleteByMap(map);
-        
+
         Result<?> updateStatusResult = bookFeignClient.updateStatus(isbn, "1");
         if (!"0".equals(updateStatusResult.getCode())) {
             return Result.error("-1", "还书失败，请重试");
         }
-        
+
         LambdaQueryWrapper<LendRecord> wrapper = Wrappers.lambdaQuery();
         wrapper.eq(LendRecord::getReaderId, userId)
-               .eq(LendRecord::getIsbn, isbn)
-               .eq(LendRecord::getStatus, "0");
+                .eq(LendRecord::getIsbn, isbn)
+                .eq(LendRecord::getStatus, "0");
         LendRecord lendRecord = lendRecordMapper.selectOne(wrapper);
         if (lendRecord != null) {
             lendRecord.setStatus("1");
             lendRecord.setReturnTime(new Date());
             lendRecordMapper.updateById(lendRecord);
         }
-        
+
         return Result.success();
     }
 
@@ -137,12 +137,12 @@ public class BorrowService {
         if (bookWithUser.getProlong() <= 0) {
             return Result.error("-1", "续借次数已用完");
         }
-        
+
         Date newDeadtime = new Date(bookWithUser.getDeadtime().getTime() + 30L * 24 * 60 * 60 * 1000);
         bookWithUser.setDeadtime(newDeadtime);
         bookWithUser.setProlong(bookWithUser.getProlong() - 1);
         bookWithUserMapper.updateById(bookWithUser);
-        
+
         return Result.success();
     }
 
@@ -155,7 +155,7 @@ public class BorrowService {
     }
 
     public Result<?> getAllLendRecords(String isbn, String bookname, Long readerId,
-                                        Integer pageNum, Integer pageSize) {
+                                       Integer pageNum, Integer pageSize) {
         LambdaQueryWrapper<LendRecord> wrapper = Wrappers.lambdaQuery();
         if (StringUtils.isNotBlank(isbn)) {
             wrapper.like(LendRecord::getIsbn, isbn);

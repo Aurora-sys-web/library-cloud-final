@@ -42,10 +42,10 @@ public class BorrowController {
     @GetMapping("/admin/records")
     @Operation(summary = "管理员查询所有借阅记录")
     public Result<?> getAllLendRecords(@RequestParam(defaultValue = "") String isbn,
-                                        @RequestParam(defaultValue = "") String bookname,
-                                        @RequestParam(required = false) Long readerId,
-                                        @RequestParam(defaultValue = "1") Integer pageNum,
-                                        @RequestParam(defaultValue = "10") Integer pageSize) {
+                                       @RequestParam(defaultValue = "") String bookname,
+                                       @RequestParam(required = false) Long readerId,
+                                       @RequestParam(defaultValue = "1") Integer pageNum,
+                                       @RequestParam(defaultValue = "10") Integer pageSize) {
         return borrowService.getAllLendRecords(isbn, bookname, readerId, pageNum, pageSize);
     }
 }

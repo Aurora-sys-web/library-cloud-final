@@ -8,6 +8,8 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/book")
 @RequiredArgsConstructor
@@ -32,6 +34,12 @@ public class BookController {
     @Operation(summary = "删除图书")
     public Result<?> delete(@PathVariable Long id) {
         return bookService.delete(id);
+    }
+
+    @PostMapping("/deleteBatch")
+    @Operation(summary = "批量删除图书")
+    public Result<?> deleteBatch(@RequestBody List<Long> ids) {
+        return bookService.deleteBatch(ids);
     }
 
     @GetMapping("/{id}")
@@ -66,5 +74,15 @@ public class BookController {
             @RequestParam(defaultValue = "") String name,
             @RequestParam(defaultValue = "") String author) {
         return bookService.pageQuery(pageNum, pageSize, isbn, name, author);
+    }
+
+    @GetMapping
+    @Operation(summary = "分页查询图书（兼容前端参数名）")
+    public Result<?> pageCompatible(@RequestParam(defaultValue = "1") Integer pageNum,
+            @RequestParam(defaultValue = "10") Integer pageSize,
+            @RequestParam(defaultValue = "") String search1,
+            @RequestParam(defaultValue = "") String search2,
+            @RequestParam(defaultValue = "") String search3) {
+        return bookService.pageQuery(pageNum, pageSize, search1, search2, search3);
     }
 }
